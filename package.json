@@ -1,0 +1,35 @@
+{
+  "name": "@nelts/dubbo",
+  "version": "1.0.0",
+  "description": "dubbo for nelts worker",
+  "main": "dist/index.js",
+  "source": "dist",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nelts/dubbo.git"
+  },
+  "scripts": {
+    "build": "rm -rf dist/ && tsc -d"
+  },
+  "files": [
+    "dist"
+  ],
+  "keywords": [
+    "template",
+    "nelts"
+  ],
+  "author": "cevio",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/nelts/dubbo/issues"
+  },
+  "homepage": "https://github.com/nelts/dubbo#readme",
+  "devDependencies": {
+    "@types/node": "^12.6.8",
+    "typescript": "^3.5.3"
+  },
+  "dependencies": {
+    "@nelts/worker": "^1.0.29",
+    "dubbo.ts": "^1.0.38"
+  }
+}
