@@ -44,6 +44,10 @@ class Dubbo {
     get rpc() {
         return this._consumer;
     }
+    setRpcResultCallback(fn) {
+        this._rpc_result_callback = fn;
+        return this;
+    }
     resumeConnection(socket) {
         if (!this.server)
             return socket.destroy();
@@ -73,7 +77,14 @@ class Dubbo {
                 ctx.body = `cannot find the method of ${ctx.method} on ${ctx.interface}:${ctx.interfaceVersion}@${ctx.group}#${ctx.dubboVersion}`;
             }
             else {
-                ctx.body = await Promise.resolve(injector[ctx.method](...ctx.parameters));
+                let result = await Promise.resolve(injector[ctx.method](...ctx.parameters));
+                if (this._rpc_result_callback) {
+                    const _result = this._rpc_result_callback(ctx.parameters, result);
+                    if (_result !== undefined) {
+                        result = _result;
+                    }
+                }
+                ctx.body = result;
             }
         });
     }

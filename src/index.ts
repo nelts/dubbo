@@ -30,6 +30,7 @@ export default class Dubbo implements WorkerServiceFrameworker {
   private _registry: Registry;
   private _provider: Provider;
   private _consumer: Consumer;
+  private _rpc_result_callback: (req: any[], res: any) => any;
   public server: net.Server;
   constructor(app: WorkerFactory<Dubbo>) {
     this._app = app;
@@ -56,6 +57,11 @@ export default class Dubbo implements WorkerServiceFrameworker {
 
   get rpc() {
     return this._consumer;
+  }
+
+  setRpcResultCallback(fn: (req: any[], res: any) => any) {
+    this._rpc_result_callback = fn;
+    return this;
   }
 
   private resumeConnection(socket: net.Socket) {
@@ -86,7 +92,14 @@ export default class Dubbo implements WorkerServiceFrameworker {
         ctx.status = PROVIDER_CONTEXT_STATUS.SERVICE_NOT_FOUND;
         ctx.body = `cannot find the method of ${ctx.method} on ${ctx.interface}:${ctx.interfaceVersion}@${ctx.group}#${ctx.dubboVersion}`;
       } else {
-        ctx.body = await Promise.resolve(injector[ctx.method](...ctx.parameters));
+        let result = await Promise.resolve(injector[ctx.method](...ctx.parameters));
+        if (this._rpc_result_callback) {
+          const _result = this._rpc_result_callback(ctx.parameters, result);
+          if (_result !== undefined) {
+            result = _result;
+          }
+        }
+        ctx.body = result;
       }
     })
   }

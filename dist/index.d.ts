@@ -23,12 +23,14 @@ export default class Dubbo implements WorkerServiceFrameworker {
     private _registry;
     private _provider;
     private _consumer;
+    private _rpc_result_callback;
     server: net.Server;
     constructor(app: WorkerFactory<Dubbo>);
     readonly app: WorkerFactory<Dubbo>;
     readonly registry: Registry;
     readonly provider: Provider;
     readonly rpc: Consumer;
+    setRpcResultCallback(fn: (req: any[], res: any) => any): this;
     private resumeConnection;
     componentWillCreate(): Promise<void>;
     componentDidCreated(): Promise<void>;
