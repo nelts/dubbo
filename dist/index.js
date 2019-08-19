@@ -69,17 +69,17 @@ class Dubbo {
             this._consumer = new dubbo_ts_1.Consumer(Consumer_Options);
         }
         this._provider = new dubbo_ts_1.Provider(Provider_Options);
-        this._provider.on('packet', async (ctx) => {
-            const target = ctx.interface.Constructor;
-            const injector = this.app.injector.get(target);
-            if (!injector[ctx.method]) {
+        this._provider.on('data', async (ctx, chunk) => {
+            const req = ctx.req;
+            const injector = this.app.injector.get(chunk);
+            if (!injector[req.method]) {
                 ctx.status = dubbo_ts_1.PROVIDER_CONTEXT_STATUS.SERVICE_NOT_FOUND;
-                ctx.body = `cannot find the method of ${ctx.method} on ${ctx.interface}:${ctx.interfaceVersion}@${ctx.group}#${ctx.dubboVersion}`;
+                ctx.body = `cannot find the method of ${req.method} on ${req.attachments.interface}:${req.attachments.version}@${req.attachments.group}#${req.dubboVersion}`;
             }
             else {
-                let result = await Promise.resolve(injector[ctx.method](...ctx.parameters));
+                let result = await Promise.resolve(injector[req.method](...req.parameters));
                 if (this._rpc_result_callback) {
-                    const _result = this._rpc_result_callback(ctx.parameters, result);
+                    const _result = this._rpc_result_callback(req.parameters, result);
                     if (_result !== undefined) {
                         result = _result;
                     }
@@ -89,24 +89,18 @@ class Dubbo {
         });
     }
     async componentDidCreated() {
-        await this._registry.connect();
-        await new Promise((resolve, reject) => {
-            this._provider.listen(this.app.port, (err) => {
-                if (err)
-                    return reject(err);
-                resolve();
-            });
-        });
+        await this._provider.listen();
+        if (this._consumer)
+            await this._consumer.listen();
         this.app.logger.info('TCP SERVER STARTED.', 'pid:', process.pid, 'port:', this.app.port);
         await this.app.emit('ServerStarted');
     }
     async componentWillDestroy() {
-        await new Promise(resolve => this._provider.close(resolve));
-        this._consumer && await new Promise(resolve => this._consumer.close(resolve));
+        await this._provider.close();
+        this._consumer && await this._consumer.close();
         await this.app.emit('ServerStopping');
     }
     async componentDidDestroyed() {
-        this.registry.destory();
         await this.app.emit('ServerStopped');
     }
 }

@@ -1,7 +1,17 @@
 import * as net from 'net';
 import WorkerFactory, { WorkerServiceFrameworker } from '@nelts/worker';
 import ServiceCompiler from './compilers/service';
-import { Registry, RegistryOptions, Provider, ProviderOptions, ProviderContext, PROVIDER_CONTEXT_STATUS, Consumer, ConsumerOptions } from 'dubbo.ts';
+import { 
+  Registry, 
+  RegistryInitOptions, 
+  Provider, 
+  ProviderContext, 
+  PROVIDER_CONTEXT_STATUS, 
+  Consumer, 
+  ConsumerServiceInitOptions,
+  ProviderInitOptions,
+  ProviderChunk
+} from 'dubbo.ts';
 
 import rpc_interface from './decorators/interface';
 import rpc_group from './decorators/group';
@@ -72,9 +82,9 @@ export default class Dubbo implements WorkerServiceFrameworker {
 
   async componentWillCreate() {
     this.app.compiler.addCompiler(ServiceCompiler);
-    const Provider_Options = this.app.configs.provider as ProviderOptions;
-    const Consumer_Options = this.app.configs.consumer as ConsumerOptions;
-    this._registry = new Registry(this.app.configs.registry as RegistryOptions);
+    const Provider_Options = this.app.configs.provider as ProviderInitOptions;
+    const Consumer_Options = this.app.configs.consumer as ConsumerServiceInitOptions;
+    this._registry = new Registry(this.app.configs.registry as RegistryInitOptions);
     Provider_Options.port = this.app.port;
     Provider_Options.pid = process.pid;
     Provider_Options.registry = this._registry;
@@ -85,16 +95,16 @@ export default class Dubbo implements WorkerServiceFrameworker {
       this._consumer = new Consumer(Consumer_Options);
     }
     this._provider = new Provider(Provider_Options);
-    this._provider.on('packet', async (ctx: ProviderContext) => {
-      const target = ctx.interface.Constructor;
-      const injector = this.app.injector.get<any>(target);
-      if (!injector[ctx.method]) {
+    this._provider.on('data', async (ctx: ProviderContext, chunk: ProviderChunk<string>) => {
+      const req = ctx.req;
+      const injector = this.app.injector.get<any>(chunk);
+      if (!injector[req.method]) {
         ctx.status = PROVIDER_CONTEXT_STATUS.SERVICE_NOT_FOUND;
-        ctx.body = `cannot find the method of ${ctx.method} on ${ctx.interface}:${ctx.interfaceVersion}@${ctx.group}#${ctx.dubboVersion}`;
+        ctx.body = `cannot find the method of ${req.method} on ${req.attachments.interface}:${req.attachments.version}@${req.attachments.group}#${req.dubboVersion}`;
       } else {
-        let result = await Promise.resolve(injector[ctx.method](...ctx.parameters));
+        let result = await Promise.resolve(injector[req.method](...req.parameters));
         if (this._rpc_result_callback) {
-          const _result = this._rpc_result_callback(ctx.parameters, result);
+          const _result = this._rpc_result_callback(req.parameters, result);
           if (_result !== undefined) {
             result = _result;
           }
@@ -105,25 +115,19 @@ export default class Dubbo implements WorkerServiceFrameworker {
   }
 
   async componentDidCreated() {
-    await this._registry.connect();
-    await new Promise((resolve, reject) => {
-      this._provider.listen(this.app.port, (err: Error) => {
-        if (err) return reject(err);
-        resolve();
-      })
-    });
+    await this._provider.listen();
+    if (this._consumer) await this._consumer.listen()
     this.app.logger.info('TCP SERVER STARTED.', 'pid:', process.pid, 'port:', this.app.port);
     await this.app.emit('ServerStarted');
   }
 
   async componentWillDestroy() {
-    await new Promise(resolve => this._provider.close(resolve));
-    this._consumer && await new Promise(resolve => this._consumer.close(resolve));
+    await this._provider.close();
+    this._consumer && await this._consumer.close();
     await this.app.emit('ServerStopping');
   }
 
   async componentDidDestroyed() {
-    this.registry.destory();
     await this.app.emit('ServerStopped');
   }
 }

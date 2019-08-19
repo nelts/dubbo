@@ -34,7 +34,7 @@ async function Service(plugin) {
                 const isMethod = Reflect.getMetadata(namespace_1.default.RPC_METHOD, target);
                 isMethod && methods.push(property);
             }
-            dubbo.provider.addService({
+            dubbo.provider.addService(provider.id, {
                 interface: interfacename,
                 revision: version || '0.0.0',
                 version: version || '0.0.0',
@@ -43,7 +43,6 @@ async function Service(plugin) {
                 delay: deplay || -1,
                 retries: retries || 2,
                 timeout: timeout || 60000,
-                target: provider.id,
             });
         }
     });
