@@ -77,7 +77,7 @@ class Dubbo {
                 ctx.body = `cannot find the method of ${req.method} on ${req.attachments.interface}:${req.attachments.version}@${req.attachments.group}#${req.dubboVersion}`;
             }
             else {
-                let result = await Promise.resolve(injector[req.method](...req.parameters));
+                let result = await Promise.resolve(injector[req.method](...req.parameters)).catch(e => Promise.resolve(e));
                 if (this._rpc_result_callback) {
                     const _result = this._rpc_result_callback(req.parameters, result);
                     if (_result !== undefined) {
