@@ -97,7 +97,7 @@ export default class Dubbo implements WorkerServiceFrameworker {
     this._provider = new Provider(Provider_Options);
     this._provider.on('data', async (ctx: ProviderContext, chunk: ProviderChunk<string>) => {
       const req = ctx.req;
-      const injector = this.app.injector.get<any>(chunk);
+      const injector = this.app.injector.get<any>(chunk.interfacetarget);
       if (!injector[req.method]) {
         ctx.status = PROVIDER_CONTEXT_STATUS.SERVICE_NOT_FOUND;
         ctx.body = `cannot find the method of ${req.method} on ${req.attachments.interface}:${req.attachments.version}@${req.attachments.group}#${req.dubboVersion}`;
