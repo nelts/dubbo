@@ -12,6 +12,7 @@ const version_1 = require("./decorators/version");
 const deplay_1 = require("./decorators/deplay");
 const retries_1 = require("./decorators/retries");
 const timeout_1 = require("./decorators/timeout");
+const middleware_1 = require("./decorators/middleware");
 const rpc = {
     interface: interface_1.default,
     group: group_1.default,
@@ -20,6 +21,7 @@ const rpc = {
     delay: deplay_1.default,
     retries: retries_1.default,
     timeout: timeout_1.default,
+    middleware: middleware_1.default,
 };
 exports.rpc = rpc;
 class Dubbo {

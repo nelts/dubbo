@@ -9,6 +9,7 @@ import rpc_version from './decorators/version';
 import rpc_delay from './decorators/deplay';
 import rpc_retries from './decorators/retries';
 import rpc_timeout from './decorators/timeout';
+import rpc_middleware from './decorators/middleware';
 declare const rpc: {
     interface: typeof rpc_interface;
     group: typeof rpc_group;
@@ -17,6 +18,7 @@ declare const rpc: {
     delay: typeof rpc_delay;
     retries: typeof rpc_retries;
     timeout: typeof rpc_timeout;
+    middleware: typeof rpc_middleware;
 };
 export { rpc, };
 export default class Dubbo implements WorkerServiceFrameworker {

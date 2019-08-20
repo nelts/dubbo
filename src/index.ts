@@ -23,6 +23,7 @@ import rpc_version from './decorators/version';
 import rpc_delay from './decorators/deplay';
 import rpc_retries from './decorators/retries';
 import rpc_timeout from './decorators/timeout';
+import rpc_middleware from './decorators/middleware';
 
 const rpc = {
   interface: rpc_interface,
@@ -32,6 +33,7 @@ const rpc = {
   delay: rpc_delay,
   retries: rpc_retries,
   timeout: rpc_timeout,
+  middleware: rpc_middleware,
 }
 
 export {
