@@ -1,4 +1,5 @@
 /// <reference types="node" />
+import 'reflect-metadata';
 import * as net from 'net';
 import WorkerFactory, { WorkerServiceFrameworker } from '@nelts/worker';
 import { Registry, Provider, Consumer } from 'dubbo.ts';

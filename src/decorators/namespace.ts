@@ -7,6 +7,7 @@ enum DecoratorNameSpace {
   RPC_DELAY = 'Rpc.Delay',
   RPC_RETRIES = 'Rpc.Retries',
   RPC_TIMEOUT = 'Rpc.Timeout',
+  RPC_MIDDLEWARE = 'Rpc.Middleware',
 }
 
 export default DecoratorNameSpace;

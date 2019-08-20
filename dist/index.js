@@ -1,6 +1,9 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+require("reflect-metadata");
 const service_1 = require("./compilers/service");
+const namespace_1 = require("./decorators/namespace");
+const utils_1 = require("@nelts/utils");
 const dubbo_ts_1 = require("dubbo.ts");
 const interface_1 = require("./decorators/interface");
 const group_1 = require("./decorators/group");
@@ -72,19 +75,29 @@ class Dubbo {
         this._provider.on('data', async (ctx, chunk) => {
             const req = ctx.req;
             const injector = this.app.injector.get(chunk.interfacetarget);
-            if (!injector[req.method]) {
+            if (!injector) {
+                ctx.status = dubbo_ts_1.PROVIDER_CONTEXT_STATUS.SERVER_TIMEOUT;
+                ctx.body = `cannot find the interface of ${chunk.interfacetarget}`;
+            }
+            else if (!injector[req.method]) {
                 ctx.status = dubbo_ts_1.PROVIDER_CONTEXT_STATUS.SERVICE_NOT_FOUND;
                 ctx.body = `cannot find the method of ${req.method} on ${req.attachments.interface}:${req.attachments.version}@${req.attachments.group}#${req.dubboVersion}`;
             }
             else {
-                let result = await Promise.resolve(injector[req.method](...req.parameters)).catch(e => Promise.resolve(e));
-                if (this._rpc_result_callback) {
-                    const _result = this._rpc_result_callback(req.parameters, result);
-                    if (_result !== undefined) {
-                        result = _result;
+                const structor = injector.constructor;
+                const middlewares = (Reflect.getMetadata(namespace_1.default.RPC_MIDDLEWARE, structor.prototype[req.method]) || []).slice(0);
+                middlewares.push(async (ctx) => {
+                    let result = await Promise.resolve(injector[req.method](...req.parameters)).catch(e => Promise.resolve(e));
+                    if (this._rpc_result_callback) {
+                        const _result = await Promise.resolve(this._rpc_result_callback(req.parameters, result));
+                        if (_result !== undefined) {
+                            result = _result;
+                        }
                     }
-                }
-                ctx.body = result;
+                    ctx.body = result;
+                });
+                const composed = utils_1.Compose(middlewares);
+                await composed(ctx);
             }
         });
     }

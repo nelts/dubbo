@@ -1,6 +1,9 @@
+import 'reflect-metadata';
 import * as net from 'net';
 import WorkerFactory, { WorkerServiceFrameworker } from '@nelts/worker';
 import ServiceCompiler from './compilers/service';
+import namespace from './decorators/namespace';
+import { Compose, ComposeMiddleware } from '@nelts/utils';
 import { 
   Registry, 
   RegistryInitOptions, 
@@ -98,18 +101,27 @@ export default class Dubbo implements WorkerServiceFrameworker {
     this._provider.on('data', async (ctx: ProviderContext, chunk: ProviderChunk<string>) => {
       const req = ctx.req;
       const injector = this.app.injector.get<any>(chunk.interfacetarget);
-      if (!injector[req.method]) {
+      if (!injector) {
+        ctx.status = PROVIDER_CONTEXT_STATUS.SERVER_TIMEOUT;
+        ctx.body = `cannot find the interface of ${chunk.interfacetarget}`;
+      } else if (!injector[req.method]) {
         ctx.status = PROVIDER_CONTEXT_STATUS.SERVICE_NOT_FOUND;
         ctx.body = `cannot find the method of ${req.method} on ${req.attachments.interface}:${req.attachments.version}@${req.attachments.group}#${req.dubboVersion}`;
       } else {
-        let result = await Promise.resolve(injector[req.method](...req.parameters)).catch(e => Promise.resolve(e));
-        if (this._rpc_result_callback) {
-          const _result = this._rpc_result_callback(req.parameters, result);
-          if (_result !== undefined) {
-            result = _result;
+        const structor = injector.constructor;
+        const middlewares: ComposeMiddleware<ProviderContext>[] = (Reflect.getMetadata(namespace.RPC_MIDDLEWARE, structor.prototype[req.method]) || []).slice(0);
+        middlewares.push(async ctx => {
+          let result = await Promise.resolve(injector[req.method](...req.parameters)).catch(e => Promise.resolve(e));
+          if (this._rpc_result_callback) {
+            const _result = await Promise.resolve(this._rpc_result_callback(req.parameters, result));
+            if (_result !== undefined) {
+              result = _result;
+            }
           }
-        }
-        ctx.body = result;
+          ctx.body = result;
+        })
+        const composed = Compose(middlewares);
+        await composed(ctx);
       }
     })
   }

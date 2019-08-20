@@ -10,5 +10,6 @@ var DecoratorNameSpace;
     DecoratorNameSpace["RPC_DELAY"] = "Rpc.Delay";
     DecoratorNameSpace["RPC_RETRIES"] = "Rpc.Retries";
     DecoratorNameSpace["RPC_TIMEOUT"] = "Rpc.Timeout";
+    DecoratorNameSpace["RPC_MIDDLEWARE"] = "Rpc.Middleware";
 })(DecoratorNameSpace || (DecoratorNameSpace = {}));
 exports.default = DecoratorNameSpace;
