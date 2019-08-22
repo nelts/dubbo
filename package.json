@@ -1,6 +1,6 @@
 {
   "name": "@nelts/dubbo",
-  "version": "1.0.16",
+  "version": "1.0.17",
   "description": "dubbo for nelts worker",
   "main": "dist/index.js",
   "source": "dist",
@@ -31,6 +31,6 @@
   "dependencies": {
     "@nelts/utils": "^1.0.20",
     "@nelts/worker": "^1.0.34",
-    "dubbo.ts": "^1.0.56"
+    "dubbo.ts": "^1.0.57"
   }
 }
