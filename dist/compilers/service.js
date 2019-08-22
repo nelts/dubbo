@@ -36,15 +36,18 @@ async function Service(plugin) {
                 const _parameters = Reflect.getMetadata(namespace_1.default.RPC_PARAMETERS, target);
                 const _response = Reflect.getMetadata(namespace_1.default.RPC_RESPONSE, target);
                 const _summary = Reflect.getMetadata(namespace_1.default.RPC_SUMMARY, target);
-                if (_parameters) {
+                if (_parameters || _response || _summary) {
                     if (!parameters) {
                         parameters[property] = {
-                            summary: _summary,
-                            input: _parameters
+                            input: []
                         };
-                        if (_response)
-                            parameters[property].output = _response;
                     }
+                    if (_response)
+                        parameters[property].output = _response;
+                    if (_summary)
+                        parameters[property].summary = _summary;
+                    if (_parameters)
+                        parameters[property].input = _parameters;
                 }
                 isMethod && methods.push(property);
             }

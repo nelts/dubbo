@@ -110,8 +110,8 @@ class Dubbo {
                 await composed(ctx);
             }
         });
-        if (this._app.configs.subject) {
-            this._swagger = new dubbo_ts_1.SwaggerProvider(this._app.configs.subject, this._provider, this._app.logger);
+        if (this._app.configs.swagger) {
+            this._swagger = new dubbo_ts_1.SwaggerProvider(this._app.configs.swagger, this._provider, this._app.logger);
         }
     }
     async componentDidCreated() {

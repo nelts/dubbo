@@ -136,9 +136,9 @@ export default class Dubbo implements WorkerServiceFrameworker {
         await composed(ctx);
       }
     });
-    if (this._app.configs.subject) {
+    if (this._app.configs.swagger) {
       this._swagger = new SwaggerProvider(
-        this._app.configs.subject,
+        this._app.configs.swagger,
         this._provider,
         this._app.logger
       );
