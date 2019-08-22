@@ -15,7 +15,7 @@ npm i @nelts/dubbo
 上报格式:
 
 ```
-/swagger/{subject}/{interface}/methods/{base64 data}
+/swagger/{subject}/{interface}/exports/{base64 data}
 ```
 
 分贝解析下参数：
