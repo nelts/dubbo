@@ -26,7 +26,7 @@ async function Service(plugin) {
         const description = Reflect.getMetadata(namespace_1.default.RPC_DESCRIPTION, service);
         if (interfacename && provider && provider.id) {
             const ServiceProperties = Object.getOwnPropertyNames(service.prototype);
-            const methods = [], parameters = {};
+            const methods = [], parameters = [];
             for (let i = 0; i < ServiceProperties.length; i++) {
                 const property = ServiceProperties[i];
                 const target = service.prototype[property];
@@ -38,17 +38,17 @@ async function Service(plugin) {
                 const _summary = Reflect.getMetadata(namespace_1.default.RPC_SUMMARY, target);
                 if (isMethod) {
                     methods.push(property);
-                    if (!parameters[property]) {
-                        parameters[property] = {
-                            input: []
-                        };
-                    }
+                    const tmp = {
+                        name: property,
+                        input: []
+                    };
                     if (_response)
-                        parameters[property].output = _response;
+                        tmp.output = _response;
                     if (_summary)
-                        parameters[property].summary = _summary;
+                        tmp.summary = _summary;
                     if (_parameters)
-                        parameters[property].input = _parameters;
+                        tmp.input = _parameters;
+                    parameters.push(tmp);
                 }
             }
             dubbo.provider.addService(provider.id, {
