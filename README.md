@@ -32,11 +32,11 @@ type Base64DataType = {
   group: string, // 组名 如果没有组，请使用字符串`-`
   version: string, // 版本名 如果没有版本，请使用字符串 `0.0.0`
   methods: {
-    [name: string]: Array<{
-      $class: string, // java解码类名
-      $schema: JSONSCHEMA,
-      $default: any,
-    }>
+    [name: string]: {
+      summary?: string,
+      input: Array<{ $class: string, $schema: JSONSCHEMA; }>,
+      output: JSONSCHEMA
+    }
   }
 }
 ```
