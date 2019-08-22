@@ -13,6 +13,10 @@ const deplay_1 = require("./decorators/deplay");
 const retries_1 = require("./decorators/retries");
 const timeout_1 = require("./decorators/timeout");
 const middleware_1 = require("./decorators/middleware");
+const description_1 = require("./decorators/description");
+const parameters_1 = require("./decorators/parameters");
+const response_1 = require("./decorators/response");
+const middleware_2 = require("./decorators/middleware");
 const rpc = {
     interface: interface_1.default,
     group: group_1.default,
@@ -22,6 +26,10 @@ const rpc = {
     retries: retries_1.default,
     timeout: timeout_1.default,
     middleware: middleware_1.default,
+    description: description_1.default,
+    parameters: parameters_1.default,
+    response: response_1.default,
+    summay: middleware_2.default,
 };
 exports.rpc = rpc;
 class Dubbo {
@@ -102,15 +110,22 @@ class Dubbo {
                 await composed(ctx);
             }
         });
+        if (this._app.configs.subject) {
+            this._swagger = new dubbo_ts_1.SwaggerProvider(this._app.configs.subject, this._provider, this._app.logger);
+        }
     }
     async componentDidCreated() {
         await this._provider.listen();
         if (this._consumer)
             await this._consumer.listen();
+        if (this._swagger)
+            await this._swagger.publish();
         this.app.logger.info('TCP SERVER STARTED.', 'pid:', process.pid, 'port:', this.app.port);
         await this.app.emit('ServerStarted');
     }
     async componentWillDestroy() {
+        if (this._swagger)
+            await this._swagger.unPublish();
         await this._provider.close();
         this._consumer && await this._consumer.close();
         await this.app.emit('ServerStopping');

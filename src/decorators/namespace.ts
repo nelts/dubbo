@@ -8,6 +8,10 @@ enum DecoratorNameSpace {
   RPC_RETRIES = 'Rpc.Retries',
   RPC_TIMEOUT = 'Rpc.Timeout',
   RPC_MIDDLEWARE = 'Rpc.Middleware',
+  RPC_PARAMETERS = 'Rpc.Parameters',
+  RPC_RESPONSE = 'Rpc.Response',
+  RPC_DESCRIPTION = 'Rpc.Description',
+  RPC_SUMMARY = 'Rpc.Summary',
 }
 
 export default DecoratorNameSpace;

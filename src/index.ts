@@ -13,7 +13,8 @@ import {
   Consumer, 
   ConsumerServiceInitOptions,
   ProviderInitOptions,
-  ProviderChunk
+  ProviderChunk,
+  SwaggerProvider
 } from 'dubbo.ts';
 
 import rpc_interface from './decorators/interface';
@@ -24,6 +25,10 @@ import rpc_delay from './decorators/deplay';
 import rpc_retries from './decorators/retries';
 import rpc_timeout from './decorators/timeout';
 import rpc_middleware from './decorators/middleware';
+import rpc_description from './decorators/description';
+import rpc_parameters from './decorators/parameters';
+import rpc_response from './decorators/response';
+import rpc_summay from './decorators/middleware';
 
 const rpc = {
   interface: rpc_interface,
@@ -34,6 +39,10 @@ const rpc = {
   retries: rpc_retries,
   timeout: rpc_timeout,
   middleware: rpc_middleware,
+  description: rpc_description,
+  parameters: rpc_parameters,
+  response: rpc_response,
+  summay: rpc_summay,
 }
 
 export {
@@ -45,6 +54,7 @@ export default class Dubbo implements WorkerServiceFrameworker {
   private _registry: Registry;
   private _provider: Provider;
   private _consumer: Consumer;
+  private _swagger: SwaggerProvider;
   private _rpc_result_callback: (req: any[], res: any) => any;
   public server: net.Server;
   constructor(app: WorkerFactory<Dubbo>) {
@@ -125,17 +135,26 @@ export default class Dubbo implements WorkerServiceFrameworker {
         const composed = Compose(middlewares);
         await composed(ctx);
       }
-    })
+    });
+    if (this._app.configs.subject) {
+      this._swagger = new SwaggerProvider(
+        this._app.configs.subject,
+        this._provider,
+        this._app.logger
+      );
+    }
   }
 
   async componentDidCreated() {
     await this._provider.listen();
-    if (this._consumer) await this._consumer.listen()
+    if (this._consumer) await this._consumer.listen();
+    if (this._swagger) await this._swagger.publish();
     this.app.logger.info('TCP SERVER STARTED.', 'pid:', process.pid, 'port:', this.app.port);
     await this.app.emit('ServerStarted');
   }
 
   async componentWillDestroy() {
+    if (this._swagger) await this._swagger.unPublish();
     await this._provider.close();
     this._consumer && await this._consumer.close();
     await this.app.emit('ServerStopping');

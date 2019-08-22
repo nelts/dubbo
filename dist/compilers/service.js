@@ -23,15 +23,29 @@ async function Service(plugin) {
         const deplay = Reflect.getMetadata(namespace_1.default.RPC_DELAY, service);
         const retries = Reflect.getMetadata(namespace_1.default.RPC_RETRIES, service);
         const timeout = Reflect.getMetadata(namespace_1.default.RPC_TIMEOUT, service);
+        const description = Reflect.getMetadata(namespace_1.default.RPC_DESCRIPTION, service);
         if (interfacename && provider && provider.id) {
             const ServiceProperties = Object.getOwnPropertyNames(service.prototype);
-            const methods = [];
+            const methods = [], parameters = {};
             for (let i = 0; i < ServiceProperties.length; i++) {
                 const property = ServiceProperties[i];
                 const target = service.prototype[property];
                 if (property === 'constructor')
                     continue;
                 const isMethod = Reflect.getMetadata(namespace_1.default.RPC_METHOD, target);
+                const _parameters = Reflect.getMetadata(namespace_1.default.RPC_PARAMETERS, target);
+                const _response = Reflect.getMetadata(namespace_1.default.RPC_RESPONSE, target);
+                const _summary = Reflect.getMetadata(namespace_1.default.RPC_SUMMARY, target);
+                if (_parameters) {
+                    if (!parameters) {
+                        parameters[property] = {
+                            summary: _summary,
+                            input: _parameters
+                        };
+                        if (_response)
+                            parameters[property].output = _response;
+                    }
+                }
                 isMethod && methods.push(property);
             }
             dubbo.provider.addService(provider.id, {
@@ -43,6 +57,8 @@ async function Service(plugin) {
                 delay: deplay || -1,
                 retries: retries || 2,
                 timeout: timeout || 60000,
+                description,
+                parameters: parameters,
             });
         }
     });

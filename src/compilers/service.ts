@@ -5,6 +5,7 @@ import namespace from '../decorators/namespace';
 import { WorkerPlugin } from '@nelts/worker';
 import Dubbo from '../index';
 import { RequireDefault } from '@nelts/utils';
+import { ProviderServiceChunkMethodParametersOptions, ProviderServiceChunkMethodParametersSchema } from 'dubbo.ts';
 export default async function Service<T extends WorkerPlugin<Dubbo>>(plugin: T) {
   const dubbo = plugin.app.frameworker;
   const cwd = plugin.source;
@@ -23,14 +24,27 @@ export default async function Service<T extends WorkerPlugin<Dubbo>>(plugin: T) 
     const deplay = Reflect.getMetadata(namespace.RPC_DELAY, service);
     const retries = Reflect.getMetadata(namespace.RPC_RETRIES, service);
     const timeout = Reflect.getMetadata(namespace.RPC_TIMEOUT, service);
+    const description = Reflect.getMetadata(namespace.RPC_DESCRIPTION, service);
     if (interfacename && provider && provider.id) {
       const ServiceProperties = Object.getOwnPropertyNames(service.prototype);
-      const methods = [];
+      const methods = [], parameters: ProviderServiceChunkMethodParametersOptions = {};
       for (let i = 0; i < ServiceProperties.length; i++) {
         const property = ServiceProperties[i];
         const target = service.prototype[property];
         if (property === 'constructor') continue;
         const isMethod = Reflect.getMetadata(namespace.RPC_METHOD, target);
+        const _parameters: ProviderServiceChunkMethodParametersSchema[] = Reflect.getMetadata(namespace.RPC_PARAMETERS, target);
+        const _response = Reflect.getMetadata(namespace.RPC_RESPONSE, target);
+        const _summary = Reflect.getMetadata(namespace.RPC_SUMMARY, target);
+        if (_parameters) {
+          if (!parameters) {
+            parameters[property] = {
+              summary: _summary,
+              input: _parameters
+            }
+            if (_response) parameters[property].output = _response;
+          }
+        }
         isMethod && methods.push(property);
       }
       dubbo.provider.addService(provider.id, {
@@ -42,6 +56,8 @@ export default async function Service<T extends WorkerPlugin<Dubbo>>(plugin: T) 
         delay: deplay || -1,
         retries: retries || 2,
         timeout: timeout || 60000,
+        description,
+        parameters: parameters,
       })
     }
   });
