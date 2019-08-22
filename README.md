@@ -33,9 +33,9 @@ type Base64DataType = {
   version: string, // 版本名 如果没有版本，请使用字符串 `0.0.0`
   methods: {
     [name: string]: {
-      summary?: string,
-      input: Array<{ $class: string, $schema: JSONSCHEMA; }>,
-      output: JSONSCHEMA
+      summary?: string, // 方法描述，摘要
+      input: Array<{ $class: string, $schema: JSONSCHEMA; }>, // 入参
+      output: JSONSCHEMA // 出参
     }
   }
 }
