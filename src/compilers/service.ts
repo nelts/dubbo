@@ -36,8 +36,9 @@ export default async function Service<T extends WorkerPlugin<Dubbo>>(plugin: T) 
         const _parameters: ProviderServiceChunkMethodParametersSchema[] = Reflect.getMetadata(namespace.RPC_PARAMETERS, target);
         const _response = Reflect.getMetadata(namespace.RPC_RESPONSE, target);
         const _summary = Reflect.getMetadata(namespace.RPC_SUMMARY, target);
-        if (_parameters || _response || _summary) {
-          if (!parameters) {
+        if (isMethod) {
+          methods.push(property);
+          if (!parameters[property]) {
             parameters[property] = {
               input: []
             }
@@ -46,7 +47,6 @@ export default async function Service<T extends WorkerPlugin<Dubbo>>(plugin: T) 
           if (_summary) parameters[property].summary = _summary;
           if (_parameters) parameters[property].input = _parameters;
         }
-        isMethod && methods.push(property);
       }
       dubbo.provider.addService(provider.id, {
         interface: interfacename,

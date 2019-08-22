@@ -36,8 +36,9 @@ async function Service(plugin) {
                 const _parameters = Reflect.getMetadata(namespace_1.default.RPC_PARAMETERS, target);
                 const _response = Reflect.getMetadata(namespace_1.default.RPC_RESPONSE, target);
                 const _summary = Reflect.getMetadata(namespace_1.default.RPC_SUMMARY, target);
-                if (_parameters || _response || _summary) {
-                    if (!parameters) {
+                if (isMethod) {
+                    methods.push(property);
+                    if (!parameters[property]) {
                         parameters[property] = {
                             input: []
                         };
@@ -49,7 +50,6 @@ async function Service(plugin) {
                     if (_parameters)
                         parameters[property].input = _parameters;
                 }
-                isMethod && methods.push(property);
             }
             dubbo.provider.addService(provider.id, {
                 interface: interfacename,
