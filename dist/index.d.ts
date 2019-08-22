@@ -13,6 +13,7 @@ import rpc_middleware from './decorators/middleware';
 import rpc_description from './decorators/description';
 import rpc_parameters from './decorators/parameters';
 import rpc_response from './decorators/response';
+import rpc_summay from './decorators/summary';
 declare const rpc: {
     interface: typeof rpc_interface;
     group: typeof rpc_group;
@@ -25,7 +26,7 @@ declare const rpc: {
     description: typeof rpc_description;
     parameters: typeof rpc_parameters;
     response: typeof rpc_response;
-    summay: typeof rpc_middleware;
+    summay: typeof rpc_summay;
 };
 export { rpc, };
 export default class Dubbo implements WorkerServiceFrameworker {

@@ -28,7 +28,7 @@ import rpc_middleware from './decorators/middleware';
 import rpc_description from './decorators/description';
 import rpc_parameters from './decorators/parameters';
 import rpc_response from './decorators/response';
-import rpc_summay from './decorators/middleware';
+import rpc_summay from './decorators/summary';
 
 const rpc = {
   interface: rpc_interface,

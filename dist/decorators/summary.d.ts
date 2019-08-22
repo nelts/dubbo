@@ -1,2 +1,2 @@
 import 'reflect-metadata';
-export default function Parameters(str: string): MethodDecorator;
+export default function Summary(str: string): MethodDecorator;

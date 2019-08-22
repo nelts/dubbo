@@ -16,7 +16,7 @@ const middleware_1 = require("./decorators/middleware");
 const description_1 = require("./decorators/description");
 const parameters_1 = require("./decorators/parameters");
 const response_1 = require("./decorators/response");
-const middleware_2 = require("./decorators/middleware");
+const summary_1 = require("./decorators/summary");
 const rpc = {
     interface: interface_1.default,
     group: group_1.default,
@@ -29,7 +29,7 @@ const rpc = {
     description: description_1.default,
     parameters: parameters_1.default,
     response: response_1.default,
-    summay: middleware_2.default,
+    summay: summary_1.default,
 };
 exports.rpc = rpc;
 class Dubbo {
