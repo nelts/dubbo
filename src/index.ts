@@ -56,6 +56,7 @@ export default class Dubbo implements WorkerServiceFrameworker {
   private _consumer: Consumer;
   private _swagger: SwaggerProvider;
   private _rpc_result_callback: (req: any[], res: any) => any;
+  private _rpc_before_middleware: ComposeMiddleware<ProviderContext>;
   public server: net.Server;
   constructor(app: WorkerFactory<Dubbo>) {
     this._app = app;
@@ -82,6 +83,11 @@ export default class Dubbo implements WorkerServiceFrameworker {
 
   get rpc() {
     return this._consumer;
+  }
+
+  setRpcBeforeMiddleware(fn: ComposeMiddleware<ProviderContext>) {
+    this._rpc_before_middleware = fn;
+    return this;
   }
 
   setRpcResultCallback(fn: (req: any[], res: any) => any) {
@@ -131,7 +137,8 @@ export default class Dubbo implements WorkerServiceFrameworker {
             }
           }
           ctx.body = result;
-        })
+        });
+        if (this._rpc_before_middleware) middlewares.unshift(this._rpc_before_middleware);
         const composed = Compose(middlewares);
         await composed(ctx);
       }

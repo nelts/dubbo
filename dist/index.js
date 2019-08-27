@@ -57,6 +57,10 @@ class Dubbo {
     get rpc() {
         return this._consumer;
     }
+    setRpcBeforeMiddleware(fn) {
+        this._rpc_before_middleware = fn;
+        return this;
+    }
     setRpcResultCallback(fn) {
         this._rpc_result_callback = fn;
         return this;
@@ -106,6 +110,8 @@ class Dubbo {
                     }
                     ctx.body = result;
                 });
+                if (this._rpc_before_middleware)
+                    middlewares.unshift(this._rpc_before_middleware);
                 const composed = utils_1.Compose(middlewares);
                 await composed(ctx);
             }

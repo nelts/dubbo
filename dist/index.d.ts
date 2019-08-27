@@ -2,7 +2,8 @@
 import 'reflect-metadata';
 import * as net from 'net';
 import WorkerFactory, { WorkerServiceFrameworker } from '@nelts/worker';
-import { Registry, Provider, Consumer } from 'dubbo.ts';
+import { ComposeMiddleware } from '@nelts/utils';
+import { Registry, Provider, ProviderContext, Consumer } from 'dubbo.ts';
 import rpc_interface from './decorators/interface';
 import rpc_group from './decorators/group';
 import rpc_version from './decorators/version';
@@ -36,12 +37,14 @@ export default class Dubbo implements WorkerServiceFrameworker {
     private _consumer;
     private _swagger;
     private _rpc_result_callback;
+    private _rpc_before_middleware;
     server: net.Server;
     constructor(app: WorkerFactory<Dubbo>);
     readonly app: WorkerFactory<Dubbo>;
     readonly registry: Registry;
     readonly provider: Provider;
     readonly rpc: Consumer;
+    setRpcBeforeMiddleware(fn: ComposeMiddleware<ProviderContext>): this;
     setRpcResultCallback(fn: (req: any[], res: any) => any): this;
     private resumeConnection;
     componentWillCreate(): Promise<void>;
