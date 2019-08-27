@@ -111,7 +111,7 @@ class Dubbo {
                     ctx.body = result;
                 });
                 if (this._rpc_before_middleware)
-                    middlewares.unshift(this._rpc_before_middleware);
+                    middlewares.unshift(this._rpc_before_middleware(structor));
                 const composed = utils_1.Compose(middlewares);
                 await composed(ctx);
             }

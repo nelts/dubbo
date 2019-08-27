@@ -44,7 +44,7 @@ export default class Dubbo implements WorkerServiceFrameworker {
     readonly registry: Registry;
     readonly provider: Provider;
     readonly rpc: Consumer;
-    setRpcBeforeMiddleware(fn: ComposeMiddleware<ProviderContext>): this;
+    setRpcBeforeMiddleware(fn: (s: any) => ComposeMiddleware<ProviderContext>): this;
     setRpcResultCallback(fn: (req: any[], res: any) => any): this;
     private resumeConnection;
     componentWillCreate(): Promise<void>;
