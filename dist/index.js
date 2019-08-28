@@ -113,7 +113,9 @@ class Dubbo {
                 if (this._rpc_before_middleware)
                     middlewares.unshift(this._rpc_before_middleware(structor));
                 const composed = utils_1.Compose(middlewares);
-                await composed(ctx);
+                await composed(ctx)
+                    .catch(e => ctx.sync('rollback').then(() => Promise.reject(e)))
+                    .then(() => ctx.sync('commit'));
             }
         });
         if (this._app.configs.swagger) {
