@@ -30,6 +30,7 @@ declare const rpc: {
     summay: typeof rpc_summay;
 };
 export { rpc, };
+declare type RPC_RESULT_CALLBACK_TYPE = (req: any[], res: any) => (ctx: ProviderContext) => any;
 export default class Dubbo implements WorkerServiceFrameworker {
     private _app;
     private _registry;
@@ -45,7 +46,7 @@ export default class Dubbo implements WorkerServiceFrameworker {
     readonly provider: Provider;
     readonly rpc: Consumer;
     setRpcBeforeMiddleware(fn: (s: any) => ComposeMiddleware<ProviderContext>): this;
-    setRpcResultCallback(fn: (req: any[], res: any) => any): this;
+    setRpcResultCallback(fn: RPC_RESULT_CALLBACK_TYPE): this;
     private resumeConnection;
     componentWillCreate(): Promise<void>;
     componentDidCreated(): Promise<void>;

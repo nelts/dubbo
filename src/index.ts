@@ -49,13 +49,15 @@ export {
   rpc,
 }
 
+type RPC_RESULT_CALLBACK_TYPE = (req: any[], res: any) => (ctx: ProviderContext) => any;
+
 export default class Dubbo implements WorkerServiceFrameworker {
   private _app: WorkerFactory<Dubbo>;
   private _registry: Registry;
   private _provider: Provider;
   private _consumer: Consumer;
   private _swagger: SwaggerProvider;
-  private _rpc_result_callback: (req: any[], res: any) => any;
+  private _rpc_result_callback: RPC_RESULT_CALLBACK_TYPE;
   private _rpc_before_middleware: (s: any) => ComposeMiddleware<ProviderContext>;
   public server: net.Server;
   constructor(app: WorkerFactory<Dubbo>) {
@@ -90,7 +92,7 @@ export default class Dubbo implements WorkerServiceFrameworker {
     return this;
   }
 
-  setRpcResultCallback(fn: (req: any[], res: any) => any) {
+  setRpcResultCallback(fn: RPC_RESULT_CALLBACK_TYPE) {
     this._rpc_result_callback = fn;
     return this;
   }
@@ -131,7 +133,8 @@ export default class Dubbo implements WorkerServiceFrameworker {
         middlewares.push(async ctx => {
           let result = await Promise.resolve(injector[req.method](...req.parameters)).catch(e => Promise.resolve(e));
           if (this._rpc_result_callback) {
-            const _result = await Promise.resolve(this._rpc_result_callback(req.parameters, result));
+            const res = this._rpc_result_callback(req.parameters, result);
+            const _result = await Promise.resolve(res(ctx));
             if (_result !== undefined) {
               result = _result;
             }
