@@ -8,6 +8,10 @@ service module using dubbo for nelts
 npm i @nelts/dubbo
 ```
 
+## Preview
+
+![code demo](images/preview.jpeg)
+
 # License
 
 [MIT](http://opensource.org/licenses/MIT)
