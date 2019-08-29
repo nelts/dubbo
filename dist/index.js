@@ -101,7 +101,7 @@ class Dubbo {
                 const structor = injector.constructor;
                 const middlewares = (Reflect.getMetadata(namespace_1.default.RPC_MIDDLEWARE, structor.prototype[req.method]) || []).slice(0);
                 middlewares.push(async (ctx) => {
-                    let result = await Promise.resolve(injector[req.method](ctx, ...req.parameters)).catch(e => Promise.resolve(e));
+                    let result = await Promise.resolve(injector[req.method](...req.parameters)).catch(e => Promise.resolve(e));
                     if (this._rpc_result_callback) {
                         const res = this._rpc_result_callback(req.parameters, result);
                         const _result = await Promise.resolve(res(ctx));
