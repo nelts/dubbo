@@ -88,14 +88,14 @@ class Dubbo {
         this._provider = new dubbo_ts_1.Provider(Provider_Options);
         this._provider.on('data', async (ctx, chunk) => {
             const req = ctx.req;
-            const injector = this.app.injector.get(chunk.interfacetarget);
+            const injector = await this.app.injector.getAsync(chunk.interfacetarget, [ctx]);
             if (!injector) {
                 ctx.status = dubbo_ts_1.PROVIDER_CONTEXT_STATUS.SERVER_TIMEOUT;
                 ctx.body = `cannot find the interface of ${chunk.interfacetarget}`;
             }
             else if (!injector[req.method]) {
                 ctx.status = dubbo_ts_1.PROVIDER_CONTEXT_STATUS.SERVICE_NOT_FOUND;
-                ctx.body = `cannot find the method of ${req.method} on ${req.attachments.interface}:${req.attachments.version}@${req.attachments.group}#${req.dubboVersion}`;
+                ctx.body = `cannot find the method of ${req.method} on ${chunk.interfacename}:${chunk.interfaceversion}@${chunk.interfacegroup}#${req.dubboVersion}`;
             }
             else {
                 const structor = injector.constructor;
