@@ -114,9 +114,10 @@ class Dubbo {
                 if (this._rpc_before_middleware)
                     middlewares.unshift(this._rpc_before_middleware(structor));
                 const composed = utils_1.Compose(middlewares);
-                await composed(ctx)
-                    .catch(e => ctx.sync('rollback').then(() => Promise.reject(e)))
-                    .then(() => ctx.sync('commit'));
+                await this._app.sync('ContextStart', ctx)
+                    .then(() => composed(ctx))
+                    .catch(e => ctx.rollback(e).then(() => this._app.sync('ContextStop', ctx)).catch(() => this._app.sync('ContextStop', ctx)).then(() => Promise.reject(e)))
+                    .then(() => ctx.commit().then(() => this._app.sync('ContextStop', ctx)));
             }
         });
         if (this._app.configs.swagger) {

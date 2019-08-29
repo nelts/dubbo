@@ -15,7 +15,7 @@
     "dist"
   ],
   "keywords": [
-    "template",
+    "dubbo",
     "nelts"
   ],
   "author": "cevio",
@@ -26,11 +26,11 @@
   "homepage": "https://github.com/nelts/dubbo#readme",
   "devDependencies": {
     "@types/node": "^12.7.2",
-    "typescript": "^3.5.3"
+    "typescript": "^3.6.2"
   },
   "dependencies": {
     "@nelts/utils": "^1.0.20",
     "@nelts/worker": "^1.0.34",
-    "dubbo.ts": "^1.0.63"
+    "dubbo.ts": "^1.0.64"
   }
 }
