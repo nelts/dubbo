@@ -30,7 +30,7 @@ declare const rpc: {
     response: typeof rpc_response;
     summay: typeof rpc_summay;
 };
-export { rpc, };
+export { rpc, Context, };
 declare type RPC_RESULT_CALLBACK_TYPE = (req: any[], res: any) => (ctx: Context) => any;
 export default class Dubbo implements WorkerServiceFrameworker {
     private _app;

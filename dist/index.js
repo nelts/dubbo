@@ -5,6 +5,7 @@ const service_1 = require("./compilers/service");
 const namespace_1 = require("./decorators/namespace");
 const utils_1 = require("@nelts/utils");
 const context_1 = require("./context");
+exports.Context = context_1.default;
 const dubbo_ts_1 = require("dubbo.ts");
 const interface_1 = require("./decorators/interface");
 const group_1 = require("./decorators/group");

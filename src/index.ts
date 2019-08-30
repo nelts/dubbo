@@ -15,7 +15,7 @@ import {
   ConsumerServiceInitOptions,
   ProviderInitOptions,
   ProviderChunk,
-  SwaggerProvider
+  SwaggerProvider,
 } from 'dubbo.ts';
 
 import rpc_interface from './decorators/interface';
@@ -48,6 +48,7 @@ const rpc = {
 
 export {
   rpc,
+  Context,
 }
 
 type RPC_RESULT_CALLBACK_TYPE = (req: any[], res: any) => (ctx: Context) => any;
