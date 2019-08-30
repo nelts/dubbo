@@ -1,4 +1,4 @@
 import 'reflect-metadata';
 import { ComposeMiddleware } from '@nelts/utils';
-import { ProviderContext } from 'dubbo.ts';
-export default function Middleware(...args: ComposeMiddleware<ProviderContext>[]): MethodDecorator;
+import Context from '../context';
+export default function Middleware(...args: ComposeMiddleware<Context>[]): MethodDecorator;
