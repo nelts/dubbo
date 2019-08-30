@@ -4,6 +4,7 @@ import WorkerFactory, { WorkerServiceFrameworker } from '@nelts/worker';
 import ServiceCompiler from './compilers/service';
 import namespace from './decorators/namespace';
 import { Compose, ComposeMiddleware } from '@nelts/utils';
+import Context from './context';
 import { 
   Registry, 
   RegistryInitOptions, 
@@ -49,7 +50,7 @@ export {
   rpc,
 }
 
-type RPC_RESULT_CALLBACK_TYPE = (req: any[], res: any) => (ctx: ProviderContext) => any;
+type RPC_RESULT_CALLBACK_TYPE = (req: any[], res: any) => (ctx: Context) => any;
 
 export default class Dubbo implements WorkerServiceFrameworker {
   private _app: WorkerFactory<Dubbo>;
@@ -58,7 +59,7 @@ export default class Dubbo implements WorkerServiceFrameworker {
   private _consumer: Consumer;
   private _swagger: SwaggerProvider;
   private _rpc_result_callback: RPC_RESULT_CALLBACK_TYPE;
-  private _rpc_before_middleware: (s: any) => ComposeMiddleware<ProviderContext>;
+  private _rpc_before_middleware: (s: any) => ComposeMiddleware<Context>;
   public server: net.Server;
   constructor(app: WorkerFactory<Dubbo>) {
     this._app = app;
@@ -87,7 +88,7 @@ export default class Dubbo implements WorkerServiceFrameworker {
     return this._consumer;
   }
 
-  setRpcBeforeMiddleware(fn: (s: any) => ComposeMiddleware<ProviderContext>) {
+  setRpcBeforeMiddleware(fn: (s: any) => ComposeMiddleware<Context>) {
     this._rpc_before_middleware = fn;
     return this;
   }
@@ -120,7 +121,8 @@ export default class Dubbo implements WorkerServiceFrameworker {
     this._provider = new Provider(Provider_Options);
     this._provider.on('data', async (ctx: ProviderContext, chunk: ProviderChunk<string>) => {
       const req = ctx.req;
-      const injector = await this.app.injector.getAsync<any>(chunk.interfacetarget, [ctx]);
+      const context = new Context(ctx);
+      const injector = await this.app.injector.getAsync<any>(chunk.interfacetarget, [context]);
       if (!injector) {
         ctx.status = PROVIDER_CONTEXT_STATUS.SERVER_TIMEOUT;
         ctx.body = `cannot find the interface of ${chunk.interfacetarget}`;
@@ -129,12 +131,12 @@ export default class Dubbo implements WorkerServiceFrameworker {
         ctx.body = `cannot find the method of ${req.method} on ${chunk.interfacename}:${chunk.interfaceversion}@${chunk.interfacegroup}#${req.dubboVersion}`;
       } else {
         const structor = injector.constructor;
-        const middlewares: ComposeMiddleware<ProviderContext>[] = (Reflect.getMetadata(namespace.RPC_MIDDLEWARE, structor.prototype[req.method]) || []).slice(0);
+        const middlewares: ComposeMiddleware<Context>[] = (Reflect.getMetadata(namespace.RPC_MIDDLEWARE, structor.prototype[req.method]) || []).slice(0);
         middlewares.push(async ctx => {
           let result = await Promise.resolve(injector[req.method](...req.parameters)).catch(e => Promise.resolve(e));
           if (this._rpc_result_callback) {
             const res = this._rpc_result_callback(req.parameters, result);
-            const _result = await Promise.resolve(res(ctx));
+            const _result = await Promise.resolve(res(context));
             if (_result !== undefined) {
               result = _result;
             }
@@ -142,11 +144,11 @@ export default class Dubbo implements WorkerServiceFrameworker {
           ctx.body = result;
         });
         if (this._rpc_before_middleware) middlewares.unshift(this._rpc_before_middleware(structor));
-        const composed = Compose(middlewares);
-        await this._app.sync('ContextStart', ctx)
-          .then(() => composed(ctx))
-          .catch(e => ctx.rollback(e).then(() => this._app.sync('ContextStop', ctx)).catch(() => this._app.sync('ContextStop', ctx)).then(() => Promise.reject(e)))
-          .then(() => ctx.commit().then(() => this._app.sync('ContextStop', ctx)));
+        const composed = Compose<Context>(middlewares);
+        await this._app.sync('ContextStart', context)
+          .then(() => composed(context))
+          .catch(e => context.rollback(e).catch(() => this._app.sync('ContextStop', context)).then(() => this._app.sync('ContextStop', context)).then(() => Promise.reject(e)))
+          .then(() => context.commit().catch(() => this._app.sync('ContextStop', context)).then(() => this._app.sync('ContextStop', context)));
       }
     });
     if (this._app.configs.swagger) {

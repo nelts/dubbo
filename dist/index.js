@@ -4,6 +4,7 @@ require("reflect-metadata");
 const service_1 = require("./compilers/service");
 const namespace_1 = require("./decorators/namespace");
 const utils_1 = require("@nelts/utils");
+const context_1 = require("./context");
 const dubbo_ts_1 = require("dubbo.ts");
 const interface_1 = require("./decorators/interface");
 const group_1 = require("./decorators/group");
@@ -88,7 +89,8 @@ class Dubbo {
         this._provider = new dubbo_ts_1.Provider(Provider_Options);
         this._provider.on('data', async (ctx, chunk) => {
             const req = ctx.req;
-            const injector = await this.app.injector.getAsync(chunk.interfacetarget, [ctx]);
+            const context = new context_1.default(ctx);
+            const injector = await this.app.injector.getAsync(chunk.interfacetarget, [context]);
             if (!injector) {
                 ctx.status = dubbo_ts_1.PROVIDER_CONTEXT_STATUS.SERVER_TIMEOUT;
                 ctx.body = `cannot find the interface of ${chunk.interfacetarget}`;
@@ -104,7 +106,7 @@ class Dubbo {
                     let result = await Promise.resolve(injector[req.method](...req.parameters)).catch(e => Promise.resolve(e));
                     if (this._rpc_result_callback) {
                         const res = this._rpc_result_callback(req.parameters, result);
-                        const _result = await Promise.resolve(res(ctx));
+                        const _result = await Promise.resolve(res(context));
                         if (_result !== undefined) {
                             result = _result;
                         }
@@ -114,10 +116,10 @@ class Dubbo {
                 if (this._rpc_before_middleware)
                     middlewares.unshift(this._rpc_before_middleware(structor));
                 const composed = utils_1.Compose(middlewares);
-                await this._app.sync('ContextStart', ctx)
-                    .then(() => composed(ctx))
-                    .catch(e => ctx.rollback(e).then(() => this._app.sync('ContextStop', ctx)).catch(() => this._app.sync('ContextStop', ctx)).then(() => Promise.reject(e)))
-                    .then(() => ctx.commit().then(() => this._app.sync('ContextStop', ctx)));
+                await this._app.sync('ContextStart', context)
+                    .then(() => composed(context))
+                    .catch(e => context.rollback(e).catch(() => this._app.sync('ContextStop', context)).then(() => this._app.sync('ContextStop', context)).then(() => Promise.reject(e)))
+                    .then(() => context.commit().catch(() => this._app.sync('ContextStop', context)).then(() => this._app.sync('ContextStop', context)));
             }
         });
         if (this._app.configs.swagger) {

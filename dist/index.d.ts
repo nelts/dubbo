@@ -3,7 +3,8 @@ import 'reflect-metadata';
 import * as net from 'net';
 import WorkerFactory, { WorkerServiceFrameworker } from '@nelts/worker';
 import { ComposeMiddleware } from '@nelts/utils';
-import { Registry, Provider, ProviderContext, Consumer } from 'dubbo.ts';
+import Context from './context';
+import { Registry, Provider, Consumer } from 'dubbo.ts';
 import rpc_interface from './decorators/interface';
 import rpc_group from './decorators/group';
 import rpc_version from './decorators/version';
@@ -30,7 +31,7 @@ declare const rpc: {
     summay: typeof rpc_summay;
 };
 export { rpc, };
-declare type RPC_RESULT_CALLBACK_TYPE = (req: any[], res: any) => (ctx: ProviderContext) => any;
+declare type RPC_RESULT_CALLBACK_TYPE = (req: any[], res: any) => (ctx: Context) => any;
 export default class Dubbo implements WorkerServiceFrameworker {
     private _app;
     private _registry;
@@ -45,7 +46,7 @@ export default class Dubbo implements WorkerServiceFrameworker {
     readonly registry: Registry;
     readonly provider: Provider;
     readonly rpc: Consumer;
-    setRpcBeforeMiddleware(fn: (s: any) => ComposeMiddleware<ProviderContext>): this;
+    setRpcBeforeMiddleware(fn: (s: any) => ComposeMiddleware<Context>): this;
     setRpcResultCallback(fn: RPC_RESULT_CALLBACK_TYPE): this;
     private resumeConnection;
     componentWillCreate(): Promise<void>;
